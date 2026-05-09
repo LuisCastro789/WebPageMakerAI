@@ -1,5 +1,5 @@
 // api/generate.js
-import { GoogleGenerativeAI } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -7,12 +7,10 @@ export default async function handler(req, res) {
   }
 
   try {
-    const ai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    
-    // Extract ALL the dynamic variables sent from the React frontend
-    const { prompt, style, imageInstructions, isRefinement } = req.body; 
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-    // Build your awesome prompt dynamically on the secure server
+    const { prompt, style, imageInstructions, isRefinement } = req.body;
+
     const finalPrompt = `
       You are an expert Senior Web Designer and Frontend Developer. 
       Your task is to generate a beautiful, fully functional, single-file HTML landing page using Tailwind CSS.
@@ -34,10 +32,10 @@ export default async function handler(req, res) {
       ${isRefinement ? `This is a REFINEMENT of the previous site. Keep the existing structure but apply these changes: ${prompt}` : ""}
     `;
 
-    // Call the Gemini API securely
-    const response = await ai.generateContent({
+    // ✅ Correct call for @google/genai
+    const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
-      contents: finalPrompt, 
+      contents: finalPrompt,
     });
 
     return res.status(200).json({ text: response.text });
