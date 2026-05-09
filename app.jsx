@@ -45,40 +45,38 @@ export default function App() {
 
   // --- UPDATED GENERATION FUNCTION ---
   // Notice there is no longer a SYSTEM_INSTRUCTION here or direct Google SDK calls
-  const generateWebsite = async (promptText, imagesData) => {
-    setIsLoading(true);
-    try {
-      // 1. Call YOUR secure Vercel endpoint, NOT Google directly
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          userRequest: promptText, // We pass this to match req.body.userRequest in generate.js
-          images: imagesData 
-        }),
-      });
+  // Inside app.jsx
+const generateWebsite = async (promptText, imagesData, currentStyle, isRefine) => {
+  setIsLoading(true);
+  try {
+    const response = await fetch('/api/generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        prompt: promptText,         // The text they typed
+        images: imagesData,         // Any uploaded images
+        style: currentStyle,        // e.g., 'Professional', 'Playful'
+        imageInstructions: "",      // Pass logic for this if you implement it
+        isRefinement: isRefine      // true/false boolean
+      }),
+    });
 
-      // 2. Handle HTTP errors from your backend
-      if (!response.ok) {
-        throw new Error("Failed to generate from backend");
-      }
-
-      // 3. Parse the securely generated text
-      const data = await response.json();
-      
-      // 4. Update the UI with the final HTML
-      setGeneratedHtml(data.text);
-      setActiveTab('preview');
-
-    } catch (error) {
-      console.error("Error generating website:", error);
-    } finally {
-      setIsLoading(false);
+    if (!response.ok) {
+      throw new Error("Failed to generate from backend");
     }
-  };
 
+    const data = await response.json();
+    setGeneratedHtml(data.text);
+    setActiveTab('preview');
+
+  } catch (error) {
+    console.error("Error generating website:", error);
+  } finally {
+    setIsLoading(false);
+  }
+};
   const handleGenerate = () => {
     if (userPrompt.trim()) {
       generateWebsite(userPrompt, uploadedImages);
